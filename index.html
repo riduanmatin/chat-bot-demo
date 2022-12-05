@@ -47,6 +47,8 @@
             //sending message from client
             io.emit('new_message', message.value);
 
+            message.value = "";
+            
             // this is prevent the form from submitting
             return false;
         }
