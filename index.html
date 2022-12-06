@@ -48,7 +48,10 @@
             io.emit('new_message', message.value);
 
             // this is prevent the form from submitting
+            // msgerInput.value = "";
             return false;
+
+            
         }
 
         $.ajax({

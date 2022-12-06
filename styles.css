@@ -27,6 +27,10 @@
     font-family: Helvetica, sans-serif;
   }
   
+  #chat{
+    display: none;
+  }
+
   .msger {
     display: flex;
     flex-flow: column wrap;

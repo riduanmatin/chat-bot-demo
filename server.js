@@ -54,22 +54,30 @@ io.on("connection", function(socket){
         })
     });
 
+    socket.on('', function(){});
+
     //server listen on from each client via socket
-    socket.on("new_message", function(data){
+    socket.on("new_message", function(data, fn){
         console.log("Client says ", data);
 
         // server will send message to client
         // send same message back to client
-        io.emit("new message", data);
+        // io.emit("new_message", data);
 
         // save message in database
-        connection.query("INSERT INTO pesan(message) VALUES ('" + data + "')", function(error, result){
+        // connection.query("INSERT INTO pesann(message) VALUES ('" + data + "')", function(error, result){
+        //     // return new message insert id
+        //     // send same message back to client
+        //     io.emit("new_message", {
+        //         id: result.insertId,
+        //         message: data
+        //     });
+        // });
+        connection.query("INSERT INTO pesann(message, position) VALUES ('" + data.msg + "','"+ data.position +"')", function(error, result){
             // return new message insert id
             // send same message back to client
-            io.emit("new_message", {
-                id: result.insertId,
-                message: data
-            });
+
+            fn(data);
 
         });
     })
@@ -79,7 +87,7 @@ io.on("connection", function(socket){
 
 //create API for get_message
 app.get("/get_messages", function(req, res){
-    connection.query("SELECT * FROM pesan", function(error, messages){
+    connection.query("SELECT * FROM pesann", function(error, messages){
         res.end(JSON.stringify(messages));
     })
 });

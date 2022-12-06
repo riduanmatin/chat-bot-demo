@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>chat bot</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
 <body>
     <section class="msger">
@@ -17,8 +19,12 @@
             <span><i class="fas fa-cog"></i></span>
           </div>
         </header>
-      
-        <main class="msger-chat">
+
+        <main class="msger-login" id="login">
+
+        </main>
+
+        <main class="msger-chat" id="chat">
           <div class="msg left-msg">
             <div
              class="msg-img"
@@ -33,7 +39,7 @@
       
               <div class="msg-text">
                 Hi, welcome to SimpleChat! Go ahead and send me a message. 😄
-              </div>
+              </div>   
             </div>
           </div>
       
@@ -54,15 +60,22 @@
               </div>
             </div>
           </div>
+          <form class="msger-inputarea">
+            <input type="text" class="msger-input" placeholder="Enter your message...">
+            <button type="submit" class="msger-send-btn">Send</button>
+          </form>
         </main>
       
-        <form class="msger-inputarea">
-          <input type="text" class="msger-input" placeholder="Enter your message...">
-          <button type="submit" class="msger-send-btn">Send</button>
-        </form>
-      </section>
+        
+    </section>
+      <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js" integrity="sha512-YeeA/Qxn5hYdkukScTCNNOhTrv1C2RubAGButJ1rmgQwZf/HdRaCGl+JAVkqsqaNRaYNHdheiuKKuPf9mDcqKg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.js" integrity="sha512-CX7sDOp7UTAq+i1FYIlf9Uo27x4os+kGeoT7rgwvY+4dmjqV0IuE/Bl5hVsjnQPQiTOhAX1O2r2j5bjsFBvv/A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        var server = 'http://127.0.0.1:3000';
+        var io = io(server);
 
-      <script>
         const msgerForm = get(".msger-inputarea");
         const msgerInput = get(".msger-input");
         const msgerChat = get(".msger-chat");
@@ -81,15 +94,45 @@
         const BOT_NAME = "BOT";
         const PERSON_NAME = "Sajad";
 
+        $.ajax({
+            url: server + "/get_messages",
+            method: 'GET',
+            success: function(response){
+                console.log(response);
+                
+                var msg = JSON.parse(response);
+                for(var i=0; i<msg.length; i++){
+                    if(msg[i].position == 'left'){
+                        appendMessage(BOT_NAME, BOT_IMG, msg[i].position, msg[i].message);
+                    }
+                    else{
+                        appendMessage(PERSON_NAME, PERSON_IMG, msg[i].position, msg[i].message);
+                    }
+                }
+            }
+        })
+
         msgerForm.addEventListener("submit", event => {
         event.preventDefault();
 
         const msgText = msgerInput.value;
         if (!msgText) return;
+        
+        io.emit('new_message', {msg: msgText, position: 'right'}, function(rs){
+            console.log(rs);
+            appendMessage(PERSON_NAME, PERSON_IMG, rs.position, rs.msg);
+        });
 
-        appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
+        // io.emit('','','');
+
+        // io.on('new_message', function(msg){
+        //     console.log(msg);
+        //     appendMessage(PERSON_NAME, PERSON_IMG, msg.position, msg.message);
+        // })
+
+        
         msgerInput.value = "";
-
+        
         botResponse();
         });
 
@@ -118,9 +161,15 @@
         const r = random(0, BOT_MSGS.length - 1);
         const msgText = BOT_MSGS[r];
         const delay = msgText.split(" ").length * 100;
+        
+        
 
         setTimeout(() => {
-            appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
+            io.emit('new_message', {msg: msgText, position: 'left'}, function(rs){
+                console.log(rs);
+                appendMessage(BOT_NAME, BOT_IMG, rs.position, rs.msg);
+            })
+            
         }, delay);
         }
 
